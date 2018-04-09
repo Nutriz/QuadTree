@@ -1,30 +1,32 @@
-QuadTree qtree;
+QuadTree qtree; 
 
-PImage img;
+PImage img; 
 
-public static boolean drawBorder = false;
-public static boolean drawFill = true;
-public static float maxDispertion = 20;
-public static int drawCount;
+static boolean drawBorder = true; 
+static boolean drawFill = true; 
+static float maxDispersion; 
 
+void setup() { 
+  background(0); 
+  size(600, 600); 
+  frameRate(30); 
 
-void setup() {
-  background(0);
-  size(600, 600);
-  frameRate(5);
+  // 1sub.png, 2sub.png, rand_sub.png, nut.png or lena.png 
+  img = loadImage("img/lena.png");
+} 
 
-  // 1sub.png, 2sub.png rand_sub.png or nut.png
-  img = loadImage("lena.png");
-}
+void draw() { 
 
-void draw() {
-  
-  maxDispertion = map(mouseX, 0.0f, float(width), 0.0f, 255.0f);
-  println("max dispertion " + maxDispertion);
-  qtree = new QuadTree(0, 0, img.width, img.height, img);
-  
-  image(img, 0, 0);
-  drawCount = 0;
+  // Clear screen 
+  background(0); 
+
+  // draw image source 
+  image(img, 0, 0); 
+
+  // Level of detail with  
+  maxDispersion = map(mouseX, 0, float(width), 0, 255);   
+  qtree = new QuadTree(0, 0, img.width, img.height, img); 
+
+  // Draw QuadTree recursively 
   qtree.show();
-  println("Draw count: " + drawCount);
-}
+} 

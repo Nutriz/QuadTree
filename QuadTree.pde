@@ -1,86 +1,94 @@
 class QuadTree { //<>//
 
-  int x;
-  int y;
-  int w;
-  int h;
-  color col;
-  int minCol = 256;
-  int maxCol = -1;
-  PImage img;
+  int x, y, w, h; 
+  color col; 
+  PImage img; 
 
-  QuadTree topLeft;
-  QuadTree topRight;
-  QuadTree bottomRight;
-  QuadTree bottomLeft;
+  // Yeah, it's a bit overkill :D 
+  // if you don't understand, check mustSubdivise() code 
+  int minCol = Integer.MAX_VALUE;  
+  int maxCol = Integer.MIN_VALUE;  
 
-  public QuadTree(int x, int y, int w, int h, PImage img) {
-    // println(" # New quadtree: " + x + " " + y + " " + w + " " + h);
-    this.x = x;
-    this.y = y;
-    this.w = w;
-    this.h = h;
-    this.img = img;
-    col = img.get(x, y);
+  QuadTree topLeft; 
+  QuadTree topRight; 
+  QuadTree bottomRight; 
+  QuadTree bottomLeft; 
 
-    if (mustSubdivise()) {
+  public QuadTree(int x, int y, int w, int h, PImage img) { 
+    // println(" # New quadtree: " + x + " " + y + " " + w + " " + h); 
+    this.x = x; 
+    this.y = y; 
+    this.w = w; 
+    this.h = h; 
+    this.img = img; 
+
+    if (mustSubdivise()) { 
       subdivise();
     }
-  }
+  } 
 
-  public boolean mustSubdivise() {
-    for (int i=y; i < (y+h); i++) {
-      for (int j=x; j < (x+w); j++) {
-
-        color currCol = img.get(j, i);
-        minCol = min(minCol, int(brightness(currCol)));
-        maxCol = max(maxCol, int(brightness(currCol)));
-
-        //else {
-        //  println("diff " + String.valueOf(maxCol-minCol));
-        //}
+  public boolean mustSubdivise() { 
+    for (int j=y; j < (y+h); j++) { 
+      for (int i=x; i < (x+w); i++) { 
+        color pixelColor = img.get(i, j); 
+        minCol = min(minCol, int(brightness(pixelColor))); 
+        maxCol = max(maxCol, int(brightness(pixelColor)));
       }
-    }
+    } 
 
-    if ((maxCol-minCol) > sketch_QuadTree.maxDispertion) {
-      col = minCol + (maxCol-minCol)/2;
+    // If too much color dispersion, subdivise
+    if ((maxCol-minCol) > sketch_QuadTree.maxDispersion) { 
       return true;
+    } else { 
+      col = minCol + (maxCol-minCol)/2; 
+      return false;
     }
-    
-    return false;
-  }
+  } 
 
-  void subdivise() {
-    topLeft = new QuadTree(x, y, w/2, h/2, img);
-    topRight = new QuadTree(x+w/2, y, w/2, h/2, img);
-    bottomRight = new QuadTree(x+w/2, y+h/2, w/2, h/2, img);
+  // Subdivision in 4 sub-areas, it's where the recursive magic happen 
+  void subdivise() { 
+    topLeft = new QuadTree(x, y, w/2, h/2, img); 
+    topRight = new QuadTree(x+w/2, y, w/2, h/2, img); 
+    bottomRight = new QuadTree(x+w/2, y+h/2, w/2, h/2, img); 
     bottomLeft = new QuadTree(x, y+h/2, w/2, h/2, img);
+  } 
+
+  void show() { 
+    // draw average color 
+    if (sketch_QuadTree.drawFill) { 
+      fillColor();
+    } 
+
+    if (hasChilds()) { 
+      drawSubAreas();
+    } 
+
+    // draw borders 
+    if (sketch_QuadTree.drawBorder) { 
+      drawBorders();
+    }
+  } 
+
+  void fillColor() { 
+    fill(col); 
+    noStroke(); 
+    rect(x, y, w, h);
+  } 
+
+  void drawSubAreas() { 
+    topLeft.show(); 
+    topRight.show(); 
+    bottomRight.show(); 
+    bottomLeft.show();
+  } 
+
+  void drawBorders() { 
+    noFill(); 
+    stroke(0, 255, 0, 40); 
+    rect(x, y, w, h);
+  } 
+
+  boolean hasChilds() { 
+    return topLeft != null;
   }
-
-  void show() {
-    
-    sketch_QuadTree.drawCount += 1;
-
-    // draw average color
-    if (sketch_QuadTree.drawFill) {
-      fill(col);
-      noStroke();
-      rect(x, y, w, h);
-    }
-
-
-    if (topLeft != null) {
-      topLeft.show();
-      topRight.show();
-      bottomRight.show();
-      bottomLeft.show();
-    }
-
-    // draw borders
-    if (sketch_QuadTree.drawBorder) {
-      noFill();
-      stroke(0, 255, 0, 40);
-      rect(x, y, w, h);
-    }
-  }
-}
+} 
